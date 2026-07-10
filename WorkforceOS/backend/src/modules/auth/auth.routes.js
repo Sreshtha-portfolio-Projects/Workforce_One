@@ -59,4 +59,11 @@ router.post(
   asyncHandler(authController.changePassword)
 );
 
+router.post(
+  '/oauth/supabase',
+  authLimiter,
+  authValidator.validateOAuthSupabase,
+  asyncHandler(authController.oauthSupabase)
+);
+
 export default router;

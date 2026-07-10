@@ -11,6 +11,8 @@ import AdminLayout from './layouts/AdminLayout';
 import LoginPage from './features/auth/pages/LoginPage';
 import RegisterPage from './features/auth/pages/RegisterPage';
 import ForgotPasswordPage from './features/auth/pages/ForgotPasswordPage';
+import ResetPasswordPage from './features/auth/pages/ResetPasswordPage';
+import OAuthCallbackPage from './features/auth/pages/OAuthCallbackPage';
 
 // Candidate Pages
 import CandidateDashboard from './features/candidate/pages/CandidateDashboard';
@@ -62,6 +64,8 @@ function App() {
         <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <LoginPage />} />
         <Route path="/register" element={isAuthenticated ? <Navigate to="/" /> : <RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/auth/callback" element={<OAuthCallbackPage />} />
       </Route>
 
       {/* Candidate Routes */}

@@ -31,7 +31,14 @@ export const findUserById = async (userId) => {
   return flattenUserWithProfile(data);
 };
 
-export const createUser = async ({ email, passwordHash, userType }) => {
+export const createUser = async ({
+  email,
+  passwordHash = null,
+  userType,
+  authProvider = 'email',
+  providerUserId = null,
+  isEmailVerified = false,
+}) => {
   const { data, error } = await supabase
     .from('users')
     .insert({
@@ -39,9 +46,11 @@ export const createUser = async ({ email, passwordHash, userType }) => {
       password_hash: passwordHash,
       user_type: userType,
       is_active: true,
-      is_email_verified: false,
+      is_email_verified: isEmailVerified,
+      auth_provider: authProvider,
+      provider_user_id: providerUserId,
     })
-    .select('id, email, user_type, is_active, created_at')
+    .select('id, email, user_type, is_active, created_at, auth_provider')
     .single();
 
   throwIfDbError(error);
@@ -140,10 +149,94 @@ export const updatePassword = async (userId, passwordHash) => {
       password_hash: passwordHash,
       password_changed_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      password_reset_token: null,
+      password_reset_expires_at: null,
     })
     .eq('id', userId);
 
   throwIfDbError(error);
+};
+
+export const setPasswordResetToken = async (userId, token, expiresAt) => {
+  const { error } = await supabase
+    .from('users')
+    .update({
+      password_reset_token: token,
+      password_reset_expires_at: expiresAt.toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', userId);
+
+  throwIfDbError(error);
+};
+
+export const findUserByResetToken = async (token) => {
+  const { data, error } = await supabase
+    .from('users')
+    .select(userWithProfileSelect)
+    .eq('password_reset_token', token)
+    .maybeSingle();
+
+  throwIfDbError(error);
+  return flattenUserWithProfile(data);
+};
+
+export const findUserByProvider = async (authProvider, providerUserId) => {
+  const { data, error } = await supabase
+    .from('users')
+    .select(userWithProfileSelect)
+    .eq('auth_provider', authProvider)
+    .eq('provider_user_id', providerUserId)
+    .maybeSingle();
+
+  throwIfDbError(error);
+  return flattenUserWithProfile(data);
+};
+
+export const linkOAuthProvider = async (userId, authProvider, providerUserId) => {
+  const { data, error } = await supabase
+    .from('users')
+    .update({
+      auth_provider: authProvider,
+      provider_user_id: providerUserId,
+      is_email_verified: true,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', userId)
+    .select('id, email, user_type, is_active')
+    .single();
+
+  throwIfDbError(error);
+  return data;
+};
+
+export const upsertUserProfile = async ({ userId, fullName, phone = null, profilePictureUrl = null }) => {
+  const { data: existing, error: findError } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  throwIfDbError(findError);
+
+  if (existing) {
+    const updates = { updated_at: new Date().toISOString() };
+    if (fullName) updates.full_name = fullName;
+    if (phone) updates.phone = phone;
+    if (profilePictureUrl) updates.profile_picture_url = profilePictureUrl;
+
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .update(updates)
+      .eq('user_id', userId)
+      .select('id, user_id, full_name, phone')
+      .single();
+
+    throwIfDbError(error);
+    return data;
+  }
+
+  return createUserProfile({ userId, fullName: fullName || 'User', phone });
 };
 
 export const assignRoleToUser = async (userId, roleId, organizationId = null) => {

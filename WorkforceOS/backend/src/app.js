@@ -60,6 +60,7 @@ app.get(apiBase, (req, res) => {
         resetPassword: `POST ${apiBase}/auth/reset-password`,
         refreshToken: `POST ${apiBase}/auth/refresh-token`,
         changePassword: `POST ${apiBase}/auth/change-password`,
+        oauthSupabase: `POST ${apiBase}/auth/oauth/supabase`,
       },
     },
   });

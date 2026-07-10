@@ -1,6 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+const getRedirectPath = (userType) => {
+  if (userType === 'candidate') return '/candidate';
+  if (userType === 'employee') return '/employee';
+  return '/admin';
+};
+
 export const useAuthStore = create(
   persist(
     (set, get) => ({
@@ -10,14 +16,17 @@ export const useAuthStore = create(
       isAuthenticated: false,
 
       setAuth: (data) => {
-        localStorage.setItem('token', data.token);
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+        }
         if (data.refreshToken) {
           localStorage.setItem('refreshToken', data.refreshToken);
         }
+
         set({
           user: data.user,
           token: data.token,
-          refreshToken: data.refreshToken,
+          refreshToken: data.refreshToken || null,
           isAuthenticated: true,
         });
       },
@@ -39,13 +48,32 @@ export const useAuthStore = create(
         const currentUser = get().user;
         set({ user: { ...currentUser, ...updates } });
       },
+
+      getHomePath: () => getRedirectPath(get().user?.userType),
     }),
     {
       name: 'auth-storage',
       partialize: (state) => ({
         user: state.user,
+        token: state.token,
+        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (!state) return;
+        if (state.token) {
+          localStorage.setItem('token', state.token);
+        }
+        if (state.refreshToken) {
+          localStorage.setItem('refreshToken', state.refreshToken);
+        }
+        if (!state.token) {
+          state.isAuthenticated = false;
+          state.user = null;
+        }
+      },
     }
   )
 );
+
+export { getRedirectPath };

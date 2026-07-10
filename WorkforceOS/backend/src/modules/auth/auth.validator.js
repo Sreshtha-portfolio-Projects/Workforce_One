@@ -58,8 +58,15 @@ const changePasswordSchema = Joi.object({
   })
 });
 
+const oauthSupabaseSchema = Joi.object({
+  accessToken: Joi.string().required().messages({
+    'any.required': 'Access token is required',
+  }),
+});
+
 export const validateRegister = validateBody(registerSchema);
 export const validateLogin = validateBody(loginSchema);
 export const validateForgotPassword = validateBody(forgotPasswordSchema);
 export const validateResetPassword = validateBody(resetPasswordSchema);
 export const validateChangePassword = validateBody(changePasswordSchema);
+export const validateOAuthSupabase = validateBody(oauthSupabaseSchema);

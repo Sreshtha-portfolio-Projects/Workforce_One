@@ -1,5 +1,6 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { authService } from '../services/authService';
 import {
   LayoutDashboard,
   User,
@@ -15,9 +16,10 @@ const CandidateLayout = () => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await authService.logout();
     logout();
-    navigate('/login');
+    navigate('/login', { replace: true });
   };
 
   const navigation = [

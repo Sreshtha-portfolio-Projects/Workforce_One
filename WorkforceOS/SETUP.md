@@ -43,6 +43,12 @@ In **Supabase → SQL Editor**, run these files **in order** (from the repo):
 
 After running, confirm tables exist under **Table Editor** (e.g. `users`, `candidates`, `roles`).
 
+Also run the auth upgrade migration:
+
+6. `database/schema/006_auth_oauth_reset.sql`
+
+This adds password-reset tokens and OAuth provider fields on `users`.
+
 ---
 
 ## 3. Backend setup
@@ -180,18 +186,42 @@ Keep both terminals running while testing.
 ### Login page
 
 1. Open http://localhost:5173 → should redirect to `/login`.
-2. Confirm login UI loads (split layout, form, Google/LinkedIn placeholders).
-3. Click **Sign Up** → register page (placeholder is OK for now).
+2. Confirm login UI loads (split layout, form, Google/LinkedIn buttons).
+3. Click **Sign Up** → full register form.
 
-### Register + login (API → UI)
+### Register flow
 
-1. Register via API (section 3) **or** implement register UI later.
-2. On login page, enter:
-   - Email: `candidate@test.com`
-   - Password: `Test1234!`
-3. Submit → should redirect to `/candidate` (candidate portal).
-4. Confirm sidebar + header render.
-5. Open browser DevTools → Application/Local Storage → token should be stored.
+1. Go to http://localhost:5173/register
+2. Fill: Full Name, Email, Phone, Password, Confirm Password, accept terms
+3. Submit → should create account and redirect to `/candidate`
+4. Confirm user appears in Supabase **Table Editor → users**
+
+### Email/password login
+
+1. Logout from candidate portal
+2. Login with the same email/password
+3. Should land on `/candidate` without page refresh loops
+4. Wrong password should show an error (no full-page refresh)
+
+### Forgot / reset password
+
+1. Go to `/forgot-password`
+2. Enter registered email → success message
+3. In development, a reset link/token is shown on screen
+4. Open `/reset-password?token=...`, set a new password
+5. Login with the new password
+
+### Google / LinkedIn login
+
+1. In Supabase Dashboard → **Authentication → Providers**:
+   - Enable **Google**
+   - Enable **LinkedIn (OIDC)**
+2. Add redirect URL:
+   - `http://localhost:5173/auth/callback`
+3. On login/register page, click **Continue with Google** or **LinkedIn**
+4. Complete provider consent → returns to `/auth/callback` → redirects to `/candidate`
+
+> If a provider is not enabled, the UI shows a clear error instead of failing silently.
 
 ### Candidate portal navigation
 
@@ -208,7 +238,6 @@ Visit these routes (placeholders until pages are fully built):
 ### Logout
 
 Use Logout in the candidate sidebar → should return to `/login`.
-
 ---
 
 ## 7. Common issues

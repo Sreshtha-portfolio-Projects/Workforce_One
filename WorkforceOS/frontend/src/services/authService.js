@@ -1,4 +1,5 @@
 import api from './api';
+import { getSupabaseBrowserClient } from '../lib/supabaseClient';
 
 export const authService = {
   register: async (data) => {
@@ -12,8 +13,16 @@ export const authService = {
   },
 
   logout: async () => {
-    const response = await api.post('/auth/logout');
-    return response.data;
+    try {
+      await api.post('/auth/logout');
+    } catch {
+      // ignore logout API errors
+    }
+
+    const supabase = getSupabaseBrowserClient();
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
   },
 
   getCurrentUser: async () => {
@@ -36,6 +45,33 @@ export const authService = {
       currentPassword,
       newPassword,
     });
+    return response.data;
+  },
+
+  loginWithOAuthProvider: async (provider) => {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      throw new Error('Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+    }
+
+    const redirectTo = `${window.location.origin}/auth/callback`;
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo,
+        queryParams: provider === 'google' ? { access_type: 'offline', prompt: 'consent' } : undefined,
+      },
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  },
+
+  completeSupabaseOAuth: async (accessToken) => {
+    const response = await api.post('/auth/oauth/supabase', { accessToken });
     return response.data;
   },
 };
