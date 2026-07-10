@@ -33,7 +33,7 @@ const generateRefreshToken = (userId) => {
 
 export const registerCandidate = async ({ email, password, fullName, phone }) => {
   const existingUser = await authRepository.findUserByEmail(email);
-  
+
   if (existingUser) {
     throw new DuplicateError('Email already registered');
   }
@@ -43,19 +43,24 @@ export const registerCandidate = async ({ email, password, fullName, phone }) =>
   const user = await authRepository.createUser({
     email,
     passwordHash,
-    userType: USER_TYPES.CANDIDATE
+    userType: USER_TYPES.CANDIDATE,
   });
 
-  await authRepository.createUserProfile({
-    userId: user.id,
-    fullName,
-    phone
-  });
+  try {
+    await authRepository.createUserProfile({
+      userId: user.id,
+      fullName,
+      phone,
+    });
 
-  await authRepository.createCandidate({
-    userId: user.id,
-    candidateCode: `CAND-${Date.now()}`
-  });
+    await authRepository.createCandidate({
+      userId: user.id,
+      candidateCode: `CAND-${Date.now()}`,
+    });
+  } catch (error) {
+    await authRepository.deleteUserById(user.id);
+    throw error;
+  }
 
   const roles = ['candidate'];
   const token = generateToken(user.id, user.email, null, roles);
@@ -68,10 +73,10 @@ export const registerCandidate = async ({ email, password, fullName, phone }) =>
       id: user.id,
       email: user.email,
       userType: user.user_type,
-      fullName
+      fullName,
     },
     token,
-    refreshToken
+    refreshToken,
   };
 };
 

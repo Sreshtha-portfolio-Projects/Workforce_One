@@ -87,50 +87,20 @@ WorkforceOS is a comprehensive enterprise platform combining:
 
 ## 🚀 Quick Start
 
+**Full setup (backend + frontend + testing):** see **[SETUP.md](./SETUP.md)**
+
 ### Prerequisites
 
 - Node.js 18+
-- Supabase account
-- PostgreSQL (via Supabase)
+- Supabase account (no local PostgreSQL)
 
-### Installation
+### Short path
 
-1. **Clone the repository**
-```bash
-git clone <repository-url>
-cd WorkforceOS
-```
-
-2. **Setup Backend**
-```bash
-cd backend
-npm install
-cp .env.example .env.local
-# Edit .env.local with your configuration
-```
-
-3. **Initialize Database**
-
-Execute SQL files in Supabase SQL Editor (in order):
-```
-database/schema/001_core_tables.sql
-database/schema/002_candidate_tables.sql
-database/schema/003_employee_tables.sql
-database/schema/004_leave_tables.sql
-database/schema/005_policy_tables.sql
-```
-
-4. **Start Backend Server**
-```bash
-npm run dev
-```
-
-Server runs at `http://localhost:5000`
-
-5. **Test API**
-```bash
-curl http://localhost:5000/health
-```
+1. Run SQL files in Supabase SQL Editor (`database/schema/001` → `005`)
+2. Configure `backend/.env` with `SUPABASE_URL` + `SUPABASE_SERVICE_KEY`
+3. `cd backend && npm install && npm run dev` → http://localhost:5000
+4. Configure `frontend/.env.local` with `VITE_API_URL=http://localhost:5000/api/v1`
+5. `cd frontend && npm install && npm run dev` → http://localhost:5173
 
 ---
 

@@ -1,13 +1,13 @@
 import app from './app.js';
 import logger from './utils/logger.js';
-import pool from './config/database.js';
+import { checkSupabaseConnection } from './config/db.js';
 
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
   try {
-    await pool.query('SELECT NOW()');
-    logger.info('✅ Database connection established');
+    await checkSupabaseConnection();
+    logger.info('✅ Supabase connection established');
 
     const server = app.listen(PORT, () => {
       logger.info(`🚀 WorkforceOS Backend Server running on port ${PORT}`);
@@ -17,18 +17,10 @@ const startServer = async () => {
 
     const gracefulShutdown = (signal) => {
       logger.info(`${signal} received. Starting graceful shutdown...`);
-      
-      server.close(async () => {
+
+      server.close(() => {
         logger.info('HTTP server closed');
-        
-        try {
-          await pool.end();
-          logger.info('Database pool closed');
-          process.exit(0);
-        } catch (error) {
-          logger.error('Error during graceful shutdown:', error);
-          process.exit(1);
-        }
+        process.exit(0);
       });
 
       setTimeout(() => {
@@ -49,9 +41,16 @@ const startServer = async () => {
       logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
       gracefulShutdown('unhandledRejection');
     });
-
   } catch (error) {
-    logger.error('Failed to start server:', error);
+    if (error.code === 'SCHEMA_NOT_READY') {
+      logger.error(error.message);
+    } else if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+      logger.error(
+        'Supabase is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_KEY in backend/.env'
+      );
+    } else {
+      logger.error('Failed to start server:', error);
+    }
     process.exit(1);
   }
 };

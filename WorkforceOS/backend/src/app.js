@@ -42,8 +42,30 @@ app.get('/health', (req, res) => {
 });
 
 const API_VERSION = process.env.API_VERSION || 'v1';
+const apiBase = `/api/${API_VERSION}`;
 
-app.use(`/api/${API_VERSION}/auth`, authRoutes);
+app.get(apiBase, (req, res) => {
+  res.json({
+    success: true,
+    message: 'WorkforceOS API',
+    version: API_VERSION,
+    endpoints: {
+      health: 'GET /health',
+      auth: {
+        register: `POST ${apiBase}/auth/register/candidate`,
+        login: `POST ${apiBase}/auth/login`,
+        me: `GET ${apiBase}/auth/me`,
+        logout: `POST ${apiBase}/auth/logout`,
+        forgotPassword: `POST ${apiBase}/auth/forgot-password`,
+        resetPassword: `POST ${apiBase}/auth/reset-password`,
+        refreshToken: `POST ${apiBase}/auth/refresh-token`,
+        changePassword: `POST ${apiBase}/auth/change-password`,
+      },
+    },
+  });
+});
+
+app.use(`${apiBase}/auth`, authRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

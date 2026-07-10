@@ -39,12 +39,15 @@ Copy `.env.example` to `.env.local` and configure:
 cp .env.example .env.local
 ```
 
-Update the following variables:
-- `DATABASE_URL` - Your PostgreSQL connection string
-- `SUPABASE_URL` - Your Supabase project URL
-- `SUPABASE_SERVICE_KEY` - Your Supabase service role key
-- `JWT_SECRET` - Strong secret for JWT signing
-- `FRONTEND_URL` - Your frontend URL for CORS
+Update the following in `.env`:
+
+- `SUPABASE_URL` — Supabase project URL (Dashboard → Settings → API)
+- `SUPABASE_SERVICE_KEY` — Service role key (backend database + storage)
+- `SUPABASE_ANON_KEY` — Anon key (optional for backend; used by frontend)
+- `JWT_SECRET` — Strong secret for JWT signing
+- `FRONTEND_URL` — Your frontend URL for CORS
+
+**No `DATABASE_URL` or local PostgreSQL required.**
 
 ### 3. Database Setup
 
@@ -133,9 +136,9 @@ module/
 |----------|-------------|---------|
 | `NODE_ENV` | Environment | development |
 | `PORT` | Server port | 5000 |
-| `DATABASE_URL` | PostgreSQL connection | - |
 | `SUPABASE_URL` | Supabase project URL | - |
-| `SUPABASE_SERVICE_KEY` | Supabase service key | - |
+| `SUPABASE_SERVICE_KEY` | Supabase service role key | - |
+| `SUPABASE_ANON_KEY` | Supabase anon key | - |
 | `JWT_SECRET` | JWT signing secret | - |
 | `JWT_EXPIRES_IN` | JWT expiration | 7d |
 | `FRONTEND_URL` | Frontend URL | http://localhost:5173 |
@@ -173,19 +176,11 @@ Winston logger with:
 - File transport (error.log, combined.log)
 - Request logging with Morgan
 
-## Database Transactions
+## Database access
 
-Use the transaction helper for multi-step operations:
+All data operations use the Supabase JavaScript client with the service role key (`src/config/db.js` + `src/config/supabase.js`). There is no direct PostgreSQL connection.
 
-```javascript
-import { transaction } from '../config/database.js';
-
-await transaction(async (client) => {
-  await client.query('INSERT INTO ...');
-  await client.query('UPDATE ...');
-  // Auto-commit on success, rollback on error
-});
-```
+For multi-step operations (e.g. candidate registration), the service layer uses sequential writes with rollback on failure.
 
 ## Development Guidelines
 
