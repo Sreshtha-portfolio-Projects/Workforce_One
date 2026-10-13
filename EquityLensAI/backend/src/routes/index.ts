@@ -11,6 +11,8 @@ v1Router.get('/', (_req, res) => {
     version: 'v1',
     endpoints: {
       health: '/api/v1/health',
+      docs: '/docs',
+      openapi: '/openapi.json',
     },
   });
 });

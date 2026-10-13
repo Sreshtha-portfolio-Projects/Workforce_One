@@ -57,6 +57,8 @@ npm run test -w @equitylensai/backend
 - Frontend: [http://localhost:3000](http://localhost:3000)
 - Backend: [http://localhost:4000](http://localhost:4000)
 - Health: [http://localhost:4000/api/v1/health](http://localhost:4000/api/v1/health)
+- API Docs (Scalar): [http://localhost:4000/docs](http://localhost:4000/docs)
+- OpenAPI Spec: [http://localhost:4000/openapi.json](http://localhost:4000/openapi.json)
 
 ## Code quality
 

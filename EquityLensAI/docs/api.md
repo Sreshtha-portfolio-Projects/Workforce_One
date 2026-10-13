@@ -89,3 +89,13 @@ The frontend must call the API through `frontend/services/api/client.ts`:
 - `apiClient.delete`
 
 Failed HTTP responses throw `ApiClientError` with `status` and `code`.
+
+## Interactive API Documentation (Scalar)
+
+Interactive documentation and the machine-readable OpenAPI specification are hosted directly by the backend service:
+
+- **Scalar API Reference**: [http://localhost:4000/docs](http://localhost:4000/docs) (also available at `/reference`)
+- **OpenAPI 3.1.0 JSON Specification**: [http://localhost:4000/openapi.json](http://localhost:4000/openapi.json)
+
+The interactive reference includes request builders, code snippet generation for multiple languages (cURL, JavaScript, Python, Go), and schema validation models for all core endpoints.
+
