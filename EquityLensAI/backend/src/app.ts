@@ -33,7 +33,7 @@ export function createApp() {
   app.use(sanitizeRequest);
   app.use(requestLogger);
 
-  app.get(['/', '/api', '/1pi'], (_req, res) => {
+  app.get(['/', '/api'], (_req, res) => {
     sendSuccess(res, {
       service: 'equitylensai-api',
       status: 'ok',
